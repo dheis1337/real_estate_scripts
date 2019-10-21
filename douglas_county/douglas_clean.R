@@ -6,18 +6,33 @@ library(lubridate)
 
 # this script is the script run to update the sales and parcels data for douglas county
 
-# load in doug parcels
-doug_addr <- st_read("~/MyStuff/DataScience/RealEstate/douglas_county/shapefiles/Addresses_w_Accounts.shp", 
-                     stringsAsFactors = FALSE)
+# load in doug parcels - laptop paths
+#doug_addr <- st_read("~/MyStuff/DataScience/RealEstate/douglas_county/shapefiles/Addresses_w_Accounts.shp", 
+#                     stringsAsFactors = FALSE) 
+
+# load in doug parcels - laptop paths
+doug_addr <- st_read("D:/real_estate_data/douglas_county/Addresses_w_Accounts.shp", 
+                     stringsAsFactors = FALSE) 
+
 
 
 # read in subdivision file
-doug_sub <- st_read("~/MyStuff/DataScience/RealEstate/douglas_county/shapefiles/Subdivisions_General.shp",
+#doug_sub <- st_read("~/MyStuff/DataScience/RealEstate/douglas_county/shapefiles/Subdivisions_General.shp",
+#                    stringsAsFactors = FALSE)
+
+
+# read in subdivision file
+doug_sub <- st_read("D:/real_estate_data/douglas_county/Subdivisions_General.shp",
                     stringsAsFactors = FALSE)
+
+
 
 
 # transform the coord system for joining
 doug_sub <- doug_sub %>% st_transform(2232)
+
+# transform the coord system of doug_addr
+doug_addr <- doug_addr %>% st_transform(2232)
 
 # join the subdivisions into the parcels 
 doug_addr <- doug_addr %>% st_join(doug_sub, left = FALSE)
@@ -93,8 +108,13 @@ set(doug_addr, i = which(doug_addr$prop_addr_st_type == "Ave"), j = "prop_addr_s
 
 
 # load in sales table
-doug_sales1 <- fread("~/MyStuff/DataScience/RealEstate/douglas_county/Property_Sales_Data.csv",
-                    stringsAsFactors = FALSE, na.strings = c("", NA))
+#doug_sales <- fread("~/MyStuff/DataScience/RealEstate/douglas_county/Property_Sales_Data.csv",
+#                    stringsAsFactors = FALSE, na.strings = c("", NA))
+
+
+# load in sales table
+doug_sales <- fread("D:/real_estate_data/douglas_county/Property_Sales_Data.csv",
+                     stringsAsFactors = FALSE, na.strings = c("", NA))
 
 
 # select desired columns 
@@ -169,8 +189,13 @@ sales_join[, mls_number := NA]
 
 
 # read in property improvements
-doug_imp <- fread("~/MyStuff/DataScience/RealEstate/douglas_county/Property_Improvements_Data.csv",
+#doug_imp <- fread("~/MyStuff/DataScience/RealEstate/douglas_county/Property_Improvements_Data.csv",
+#                  stringsAsFactors = FALSE)
+
+# read in property improvements
+doug_imp <- fread("D:/real_estate_data/douglas_county/Property_Improvements_Data.csv",
                   stringsAsFactors = FALSE)
+
 
 # subset the improvements dataset 
 doug_imp <- doug_imp[PROPERTY_TYPE_CODE %in% c("Residential", "Townhouse", "Multiple Unit", "Condo",
@@ -210,16 +235,29 @@ zip <- c(80104, 80108, 80109, 80116, 80118, 80124, 80125, 80126, 80129, 80130,
 
 
 # create a function to save the data based on zip code
+# save_function <- function(zips, dt) {
+#   save_dt <- dt %>% filter(prop_addr_zip == zips)
+#   
+#   save_file <- paste("~/MyStuff/DataScience/RealEstate/douglas_county/sold/", zips, 
+#                      ".csv", sep = "")
+#   
+#   fwrite(save_dt, file = save_file, row.names = FALSE)
+#   
+# }
+#  
+
+# create a function to save the data based on zip code
 save_function <- function(zips, dt) {
   save_dt <- dt %>% filter(prop_addr_zip == zips)
   
-  save_file <- paste("~/MyStuff/DataScience/RealEstate/douglas_county/sold/", zips, 
+  save_file <- paste("D:/real_estate_data/douglas_county/sold/", zips, 
                      ".csv", sep = "")
   
   fwrite(save_dt, file = save_file, row.names = FALSE)
   
 }
- 
+
+
 # sapply over the zip vector 
 sapply(zip, save_function, dt = sales_join)
 
